@@ -21,8 +21,10 @@ Bookmakers set odds that imply a probability for each game outcome. Those implie
 ## Project structure
 
 ```
-sports_odds_analysis.ipynb   # main notebook
-app.py                       # Streamlit dashboard (upcoming)
+1\sports_odds_analysis.ipynb    # Day 1 (Stage 1 & 2)
+2\nba_odds_analysis.ipynb       # Day 2 (Stage 3 & 4)
+3\nba_odds_analysis_3.ipynb     # Day 3 (Stage 5)
+app.py                          # Streamlit dashboard (upcoming)
 README.md
 ```
 
