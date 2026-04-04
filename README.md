@@ -1,6 +1,6 @@
 # NBA Odds Analysis
 
-A little data science project that models NBA game probabilities and compares them against bookmaker odds to identify market inefficiencies.
+A data science project that models NBA game probabilities and compares them against bookmaker odds to identify market inefficiencies.
 
 No real money is involved — this is purely a data science and modeling exercise.
 
@@ -22,6 +22,7 @@ Bookmakers set odds that imply a probability for each game outcome. Those implie
 
 ```
 sports_odds_analysis.ipynb   # main notebook
+app.py                       # Streamlit dashboard (upcoming)
 README.md
 ```
 
@@ -37,13 +38,42 @@ README.md
 - Visualize tonight's games with team colors
 
 ### Stage 2 — Team stats & win probability models (complete)
-- Scrape current NBA standings from basketball-reference.com
+- Pull current NBA standings via nba_api
 - Build model v1 using season-average net rating
 - Build model v2 using recent form (last 10 games)
 - Compare both models against market consensus
 - Flag large gaps between model and market for manual review
 
-### More upcoming
+### Stage 3 — Backtesting & betting simulation (complete)
+- Built rolling standings to avoid look-ahead bias
+- Simulated a full season of flat bets ($10 per game)
+- Tracked ROI, max drawdown, and losing streaks
+- Result: 70.1% accuracy, 305.9% ROI, 4.3% max drawdown
+
+### Stage 4 — Poisson score modeling (complete)
+- Built attack and defense ratings for all 30 teams
+- Modeled expected scores using a Poisson distribution
+- Backtested against V1 and V2
+- Result: 69.3% accuracy — more complex but not more accurate than V1
+
+### Stage 5 — Bayesian Elo ratings (complete)
+- Built a dynamic Elo rating system that updates after every game
+- Tuned K factor and home advantage across 30 parameter combinations
+- Result: 66.4% accuracy (best at K=15, home advantage=50)
+
+---
+
+## Model leaderboard
+
+| Model | Accuracy | Notes |
+|-------|----------|-------|
+| V1 season average | 70.1% | simplest, most accurate |
+| V3 Poisson | 69.3% | useful for score prediction |
+| V4 Elo (tuned) | 66.4% | dynamic but noisy |
+| V2 recent form | 65.4% | too sensitive to hot/cold streaks |
+| Baseline (always home) | 54.9% | |
+
+Key finding: Occam's Razor holds. The simplest model (season-average net rating) outperforms all more complex approaches. In the NBA, 82-game averages are stable enough that dynamic updates add noise rather than signal.
 
 ---
 
@@ -55,6 +85,11 @@ README.md
 - Home court advantage modeling
 - Sigmoid function for probability estimation
 - Recent form vs season averages
+- Look-ahead bias and rolling backtests
+- Kelly Criterion for bet sizing
+- Poisson distribution for score modeling
+- Elo rating systems and K factor tuning
+- Occam's Razor in model selection
 - Why large model-market gaps signal missing context (injuries, rest, back-to-backs)
 
 ---
@@ -62,15 +97,14 @@ README.md
 ## Data sources
 
 - [The Odds API](https://the-odds-api.com) — live and historical bookmaker odds
-- [Basketball Reference](https://www.basketball-reference.com) — NBA standings and game logs
+- [nba_api](https://github.com/swar/nba_api) — NBA standings and game logs via the official NBA stats API
 
 ---
 
 ## Setup
 
 ```bash
-# in Google Colab or locally
-pip install requests pandas matplotlib scipy
+pip install requests pandas matplotlib scipy nba_api
 ```
 
 Get a free API key at [the-odds-api.com](https://the-odds-api.com) and add it to the notebook.
