@@ -24,7 +24,7 @@ Bookmakers set odds that imply a probability for each game outcome. Those implie
 1\sports_odds_analysis.ipynb    # Day 1 (Stage 1 & 2)
 2\nba_odds_analysis.ipynb       # Day 2 (Stage 3 & 4)
 3\nba_odds_analysis_3.ipynb     # Day 3 (Stage 5)
-app.py                          # Streamlit dashboard (upcoming)
+app.py                          # Streamlit dashboard
 README.md
 ```
 
@@ -78,6 +78,23 @@ README.md
 Key finding: Occam's Razor holds. The simplest model (season-average net rating) outperforms all more complex approaches. In the NBA, 82-game averages are stable enough that dynamic updates add noise rather than signal.
 
 ---
+
+## Streamlit Dashboard
+
+A live Streamlit dashboard brings the full pipeline into a single interface. It pulls live odds and NBA data automatically and refreshes every 30 minutes.
+
+- Tonight's games — for each game on the schedule, the dashboard shows the model's predicted win probability alongside the market consensus, highlights the edge, displays the best available odds across all books, and gives a plain-English verdict: worth considering, skip, or caution. The caution flag triggers automatically when the model-market gap exceeds 15%, which almost always indicates injuries or missing roster context.
+- Team ratings — a full 30-team table sorted by Elo rating, with net points per game, win percentage, and a progress bar for Elo strength. A side panel surfaces the top five offenses, defenses, and biggest Elo movers of the season.
+- Backtest — the full season simulation with a bankroll curve, accuracy, ROI, max drawdown, and win/loss count. The model leaderboard is shown at the bottom for context.
+
+1. Go to ![https://nbaoddsanalysis.streamlit.app](https://nbaoddsanalysis.streamlit.app)
+2. Get your Odds API key from ![https://the-odds-api.com](https://the-odds-api.com) and enter it in the dashboard.
+
+<img width="888" height="678" alt="image" src="https://github.com/user-attachments/assets/184aeffb-7218-4d3b-8ca1-4ee47467bacd" />
+<img width="1424" height="673" alt="image" src="https://github.com/user-attachments/assets/46c4109e-43dc-47ce-bded-cc676fbcde47" />
+<img width="1404" height="373" alt="image" src="https://github.com/user-attachments/assets/32599b58-ef70-4b5d-98f8-e3499bfd67ab" />
+<img width="1592" height="782" alt="image" src="https://github.com/user-attachments/assets/6e0cea9c-ee30-4dc2-a521-135c37ca7411" />
+
 
 ## Key concepts covered
 
