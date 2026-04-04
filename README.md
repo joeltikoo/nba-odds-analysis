@@ -87,8 +87,8 @@ A live Streamlit dashboard brings the full pipeline into a single interface. It 
 - Team ratings — a full 30-team table sorted by Elo rating, with net points per game, win percentage, and a progress bar for Elo strength. A side panel surfaces the top five offenses, defenses, and biggest Elo movers of the season.
 - Backtest — the full season simulation with a bankroll curve, accuracy, ROI, max drawdown, and win/loss count. The model leaderboard is shown at the bottom for context.
 
-1. Go to !https://nbaoddsanalysis.streamlit.app(https://nbaoddsanalysis.streamlit.app)
-2. Get your Odds API key from !https://the-odds-api.com(https://the-odds-api.com) and enter it in the dashboard.
+1. Go to [https://nbaoddsanalysis.streamlit.app](https://nbaoddsanalysis.streamlit.app)
+2. Get your Odds API key from [https://the-odds-api.com](https://the-odds-api.com) and enter it in the dashboard.
 
 <img width="888" height="678" alt="image" src="https://github.com/user-attachments/assets/184aeffb-7218-4d3b-8ca1-4ee47467bacd" />
 <img width="1424" height="673" alt="image" src="https://github.com/user-attachments/assets/46c4109e-43dc-47ce-bded-cc676fbcde47" />
