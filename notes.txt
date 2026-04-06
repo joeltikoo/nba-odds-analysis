@@ -1,1 +1,15 @@
 Things I've learned along the way:
+---
+---
+If a bookmaker offers you 2.50 odds on a team winning, they're essentially saying "for every $1 you bet, you get $2.50 back if you win."
+Flipping that around — if the payout is 2.50x your money, the bookmaker is implying the team has a 1 in 2.50 chance of winning, which is 40%.
+---
+total = sum(raw_probs.values())
+vig = (total - 1) * 100
+
+Adds up all the implied probabilities. 
+As we know they sum to something like 1.043 instead of 1.0. 
+Subtracting 1 and multiplying by 100 converts that excess into a readable percentage, so 1.043 becomes 4.3% vig
+---
+Market probabilities average is called "consensus probability"
+---
