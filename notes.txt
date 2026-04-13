@@ -13,3 +13,5 @@ Subtracting 1 and multiplying by 100 converts that excess into a readable percen
 ---
 Market probabilities average is called "consensus probability"
 ---
+scipy.special.expit = sigmoid function, i.e.  σ(x)=1/(1+(e^(−x)))
+---
