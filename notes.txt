@@ -1,4 +1,4 @@
-Things I've learned along the way:
+A couple of the new things I've learned:
 ---
 ---
 If a bookmaker offers you 2.50 odds on a team winning, they're essentially saying "for every $1 you bet, you get $2.50 back if you win."
@@ -13,5 +13,7 @@ Subtracting 1 and multiplying by 100 converts that excess into a readable percen
 ---
 Market probabilities average is called "consensus probability"
 ---
-scipy.special.expit = sigmoid function, i.e.  σ(x)=1/(1+(e^(−x)))
+scipy.special.expit = sigmoid function, i.e.  σ(x)=1/(1+(e^(−x))) => convert something that lives on an infinite scale into a probability that has to stay between 0 and 1.
+The 0.15 is a scaling factor that compresses the point difference before feeding it into sigmoid, because without it sigmoid would be too aggressive; a +5 net rating difference would give 99% win probability which is unrealistic for basketball. It was chosen manually to map typical NBA point differences into a sensible probability range of roughly 20-80%, though a more advanced model would learn this number from the data automatically.
+---
 ---
