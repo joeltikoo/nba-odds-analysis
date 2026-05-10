@@ -17,3 +17,87 @@ scipy.special.expit = sigmoid function, i.e.  σ(x)=1/(1+(e^(−x))) => convert 
 The 0.15 is a scaling factor that compresses the point difference before feeding it into sigmoid, because without it sigmoid would be too aggressive; a +5 net rating difference would give 99% win probability which is unrealistic for basketball. It was chosen manually to map typical NBA point differences into a sensible probability range of roughly 20-80%, though a more advanced model would learn this number from the data automatically.
 ---
 ---
+Even though are model completely aligned with the market, we cant say that its completely accurate, therefore we'll backtest it with the previous games this season.
+Backtesting means using historical data to see how our strategy would have performed in the past.
+---
+The Kelly Criterion answers one question: given that I have an edge, how much of my bankroll should I bet?
+Too little and you're leaving money on the table. Too much and one bad run wipes you out. Kelly gives you the mathematically optimal stake.
+
+def kelly_fraction(model_prob, odds_decimal, fraction=0.25):
+    edge = model_prob - (1 / odds_decimal)
+    kelly = edge / (odds_decimal - 1)
+    return max(0, kelly * fraction)
+
+edge = model_prob - (1 / odds_decimal)
+Your edge is how much more confident you are than the bookmaker. If your model says 60% and the bookmaker implies 50%, your edge is 10%.
+
+kelly = edge / (odds_decimal - 1)
+Divides the edge by the net odds — how much you win per $1 staked. At 1.91 odds you win $0.91 per $1. This gives you the raw Kelly fraction — the percentage of your bankroll to bet.
+
+return max(0, kelly * fraction)
+Two things here. max(0, ...) means if the edge is negative, bet nothing — never bet against yourself. The * fraction multiplies by 0.25, meaning you only bet a quarter of what full Kelly suggests. This is called fractional Kelly and exists because:
+
+Full Kelly assumes your model probabilities are perfectly accurate — they never are
+Full Kelly leads to massive swings in bankroll even when you have a real edge
+Most professional bettors use half Kelly or quarter Kelly to stay conservative
+---
+When we first ran Kelly the bankroll grew to trillions of dollars. That happened because:
+
+Kelly compounds — every bet stakes a percentage of the current bankroll, so winnings get reinvested immediately
+Over 900 bets even a small consistent edge grows exponentially when fully reinvested
+Our model probabilities were overconfident, so Kelly was suggesting stakes that were too large
+
+This is why we switched to flat betting first. Flat betting gives you a honest picture of whether your edge is real before you start compounding it aggressively.
+---
+Bug found: look-ahead bias
+Current backtest uses end-of-season standings for all predictions. This leaks future information into past predictions and inflates results.
+
+Fix: rebuild standings incrementally from game results, so each prediction only uses data available before that game date. This is called a rolling or point-in-time backtest.
+---
+Accuracy drop means there's a bug. (70% -> 55%)
+
+model_favors_home is never updated inside the flat betting loop so it's carrying over a stale value from the previous loop.
+---
+That curve looks almost too good: perfectly linear growth and 0.0% max drawdown is a red flag.
+A real betting simulation should have losing streaks and dips.
+
+Two things to flag:
+The drawdown calculation is bugged. The peak happens to be the last point in the series, so there's no trough after it, giving a false 0.0%.
+The curve never dips below the starting bankroll once. That's unrealistic over 1000 bets and suggests the model may still have some data leakage we haven't fully fixed.
+---
+Drawdown measures the worst drop from a peak your bankroll experienced at any point during the season. Not the drop from the start — the drop from whatever the highest point was at that moment.
+peak = history[0]
+Start by assuming the first value is the highest point seen so far.
+for value in history:
+    if value > peak:
+        peak = value
+Loop through every bankroll value. If the current value is higher than the previous peak, update the peak. This tracks the running high watermark — the best your bankroll has ever been up to this point.
+dd = (peak - value) / peak * 100
+Calculate how far the current value has dropped from that peak, as a percentage. For example:
+peak  = $2000
+value = $1800
+dd    = (2000 - 1800) / 2000 * 100 = 10%
+if dd > max_dd:
+    max_dd = dd
+If this drawdown is the worst one seen so far, record it.
+---
+Away
+      0  1  2  3
+H  0 [D][.][.][.]
+o  1 [W][D][.][.]
+m  2 [W][W][D][.]
+e  3 [W][W][W][D]
+
+W = home win, D = draw, . = away win
+---
+---
+exp_home = 1 / (1 + 10^((away_elo - home_elo) / 400))
+The 400 is a scaling constant. The 10 base means a 400 point rating difference implies roughly a 91% win probability for the higher rated team.
+After each game ratings update like this:
+pythonelo[winner] += K * (1 - expected_win_prob)
+elo[loser]  += K * (0 - expected_loss_prob)
+Where K controls how aggressively ratings update after each game. We tuned K=15 as the best value for NBA data.
+---
+Bayesian thinking means you start with a prior belief and update it as new evidence arrives.
+---
+grid search — a systematic way of finding the best combination of parameters by just trying all of them and seeing which performs best.
