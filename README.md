@@ -1,4 +1,4 @@
-# NBA Odds Analysis
+# NBA Analytics Engine
 
 A data science project that models NBA game probabilities and compares them against bookmaker odds to identify market inefficiencies.
 
