@@ -130,6 +130,15 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+with st.spinner("Loading NBA data..."):
+    results = load_results()
+    standings = load_standings()
+    
+    if results.empty or standings.empty:
+        st.error("Could not load NBA data. The NBA stats API may be down. Please refresh in a few minutes.")
+        st.stop()
+    
+    elo_ratings = build_elo(results)
 
 # ── helpers ───────────────────────────────────────────────────
 def normalize_odds(bookmaker):
@@ -188,33 +197,57 @@ def build_elo(results, k=15, home_advantage=50):
 @st.cache_data(ttl=3600)
 def load_results():
     from nba_api.stats.endpoints import leaguegamelog
-    gamelog = leaguegamelog.LeagueGameLog(
-        season="2025-26",
-        season_type_all_star="Regular Season",
-        player_or_team_abbreviation="T"
-    )
-    df = gamelog.get_data_frames()[0]
-    df = df[["GAME_ID", "GAME_DATE", "TEAM_NAME", "MATCHUP", "WL", "PTS"]].copy()
-    home = df[df["MATCHUP"].str.contains("vs[.]")].copy()
-    away = df[df["MATCHUP"].str.contains(" @ ")].copy()
-    home = home[["GAME_ID", "GAME_DATE", "TEAM_NAME", "PTS", "WL"]]
-    home.columns = ["game_id", "date", "home_team", "home_pts", "home_wl"]
-    away = away[["GAME_ID", "TEAM_NAME", "PTS"]]
-    away.columns = ["game_id", "away_team", "away_pts"]
-    results = pd.merge(home, away, on="game_id")
-    results["home_win"] = results["home_wl"] == "W"
-    return results[["date", "home_team", "away_team", "home_pts", "away_pts", "home_win"]]
+    import time
+    
+    for attempt in range(3):  # retry up to 3 times
+        try:
+            gamelog = leaguegamelog.LeagueGameLog(
+                season="2025-26",
+                season_type_all_star="Regular Season",
+                player_or_team_abbreviation="T",
+                timeout=60  # give it 60 seconds
+            )
+            df = gamelog.get_data_frames()[0]
+            df = df[["GAME_ID", "GAME_DATE", "TEAM_NAME", "MATCHUP", "WL", "PTS"]].copy()
+            home = df[df["MATCHUP"].str.contains("vs[.]")].copy()
+            away = df[df["MATCHUP"].str.contains(" @ ")].copy()
+            home = home[["GAME_ID", "GAME_DATE", "TEAM_NAME", "PTS", "WL"]]
+            home.columns = ["game_id", "date", "home_team", "home_pts", "home_wl"]
+            away = away[["GAME_ID", "TEAM_NAME", "PTS"]]
+            away.columns = ["game_id", "away_team", "away_pts"]
+            results = pd.merge(home, away, on="game_id")
+            results["home_win"] = results["home_wl"] == "W"
+            return results[["date", "home_team", "away_team", "home_pts", "away_pts", "home_win"]]
+        except Exception as e:
+            if attempt < 2:
+                time.sleep(5)  # wait 5 seconds before retrying
+                continue
+            st.error(f"Failed to load game results after 3 attempts: {e}")
+            return pd.DataFrame()
 
 @st.cache_data(ttl=3600)
 def load_standings():
     from nba_api.stats.endpoints import leaguestandings
-    df = leaguestandings.LeagueStandings(season="2025-26").get_data_frames()[0]
-    df = df[["TeamName", "TeamCity", "WINS", "LOSSES", "WinPCT", "PointsPG", "OppPointsPG"]].copy()
-    df.columns = ["team_name", "team_city", "W", "L", "win_pct", "pts_scored", "pts_allowed"]
-    df["team"] = df["team_city"] + " " + df["team_name"]
-    df["team"] = df["team"].str.replace("*", "", regex=False)
-    df["net_pts"] = df["pts_scored"] - df["pts_allowed"]
-    return df[["team", "W", "L", "win_pct", "pts_scored", "pts_allowed", "net_pts"]]
+    import time
+    
+    for attempt in range(3):
+        try:
+            df = leaguestandings.LeagueStandings(
+                season="2025-26",
+                timeout=60
+            ).get_data_frames()[0]
+            df = df[["TeamName", "TeamCity", "WINS", "LOSSES", "WinPCT", "PointsPG", "OppPointsPG"]].copy()
+            df.columns = ["team_name", "team_city", "W", "L", "win_pct", "pts_scored", "pts_allowed"]
+            df["team"] = df["team_city"] + " " + df["team_name"]
+            df["team"] = df["team"].str.replace("*", "", regex=False)
+            df["net_pts"] = df["pts_scored"] - df["pts_allowed"]
+            return df[["team", "W", "L", "win_pct", "pts_scored", "pts_allowed", "net_pts"]]
+        except Exception as e:
+            if attempt < 2:
+                time.sleep(5)
+                continue
+            st.error(f"Failed to load standings after 3 attempts: {e}")
+            return pd.DataFrame()
 
 @st.cache_data(ttl=1800)
 def load_odds(api_key):
